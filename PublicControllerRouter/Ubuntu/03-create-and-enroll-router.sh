@@ -24,11 +24,12 @@ fi
 
 if [[ ! -f "$ROUTER_DIR/router.yaml" ]]; then
   echo "▶ Enrolling router..."
-
   ziti edge enroll edge-router "$ZITI_ROUTER_NAME" \
     --jwt-output-file "$JWT_FILE"
 
   mkdir -p "$ROUTER_DIR"
+  chown -R "$ZITI_USER:$ZITI_USER" "$ROUTER_DIR"
+
   ziti-router enroll "$JWT_FILE" \
     --router-name "$ZITI_ROUTER_NAME" \
     --listen-address "0.0.0.0:$ZITI_ROUTER_PORT"

@@ -11,6 +11,7 @@ fi
 # shellcheck disable=SC1090
 source "$BOOTSTRAP_ENV"
 
+# Username is always admin
 ZITI_ADMIN_USERNAME="admin"
 
 if [[ -n "${ZITI_BOOTSTRAP_EDGE_ADMIN_PASSWORD:-}" ]]; then
