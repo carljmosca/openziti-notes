@@ -14,19 +14,31 @@ id ziti &>/dev/null || useradd -r -s /sbin/nologin ziti
 mkdir -p /opt/openziti/lib
 chown -R ziti:ziti /opt/openziti
 
-# Download OpenZiti binaries
-OS=$(uname | tr '[:upper:]' '[:lower:]')
+# Explicit release URL (replace v1.13.3 with your desired release)
+ZITI_VERSION="v1.13.3"
 ARCH=$(uname -m)
-ZITI_TAR="openziti-$OS-$ARCH.tar.gz"
-DOWNLOAD_URL="https://github.com/openziti/ziti/releases/latest/download/$ZITI_TAR"
+if [[ "$ARCH" == "x86_64" ]]; then
+    ARCH="x86_64"
+else
+    echo "❌ Unsupported architecture: $ARCH"
+    exit 1
+fi
+
+DOWNLOAD_URL="https://github.com/openziti/ziti/releases/download/$ZITI_VERSION/openziti-linux-$ARCH.tar.gz"
 
 echo "▶ Downloading $DOWNLOAD_URL ..."
 curl -LO "$DOWNLOAD_URL"
 
-echo "▶ Extracting to /opt/openziti ..."
-tar -xzf "$ZITI_TAR" -C /opt/openziti --strip-components=1
+# Verify small download
+if [[ ! -s openziti-linux-$ARCH.tar.gz ]]; then
+    echo "❌ Download failed or empty file"
+    exit 1
+fi
 
-rm -f "$ZITI_TAR"
+echo "▶ Extracting to /opt/openziti ..."
+tar -xzf openziti-linux-$ARCH.tar.gz -C /opt/openziti --strip-components=1
+
+rm -f openziti-linux-$ARCH.tar.gz
 
 echo "✅ OpenZiti installed"
 echo "Next: copy your ziti.env into /opt/openziti/ziti.env and continue with 02-bootstrap-controller.sh"
