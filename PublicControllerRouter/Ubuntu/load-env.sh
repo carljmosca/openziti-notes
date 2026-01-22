@@ -4,7 +4,7 @@ set -euo pipefail
 ENV_FILE="/opt/openziti/ziti.env"
 
 if [[ ! -f "$ENV_FILE" ]]; then
-  echo "❌ Missing environment file: $ENV_FILE"
+  echo "❌ Missing $ENV_FILE"
   exit 1
 fi
 
@@ -12,29 +12,16 @@ fi
 source "$ENV_FILE"
 
 REQUIRED_VARS=(
-  CTRL_DOMAIN
-  ROUTER_DOMAIN
-  LE_EMAIL
   ZITI_HOME
-  LE_BASE
-  ZITI_CTRL_ADVERTISED_PORT
+  CTRL_DOMAIN
   ZITI_CTRL_API_PORT
-  ZITI_ROUTER_PORT
   ZITI_ROUTER_NAME
+  ZITI_ROUTER_PORT
 )
 
-MISSING=()
-
-for VAR in "${REQUIRED_VARS[@]}"; do
-  if [[ -z "${!VAR:-}" ]]; then
-    MISSING+=("$VAR")
+for v in "${REQUIRED_VARS[@]}"; do
+  if [[ -z "${!v:-}" ]]; then
+    echo "❌ Required variable '$v' is not set"
+    exit 1
   fi
 done
-
-if (( ${#MISSING[@]} > 0 )); then
-  echo "❌ Missing required environment variables:"
-  for V in "${MISSING[@]}"; do
-    echo "   - $V"
-  done
-  exit 1
-fi

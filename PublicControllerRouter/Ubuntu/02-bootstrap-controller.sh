@@ -1,24 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'echo "❌ Error on line $LINENO"; exit 1' ERR
 
 source /opt/openziti/load-env.sh
 
-ZITI_CTRL_HOME=/opt/openziti/etc/controller
-ZITI_PKI_HOME=/opt/openziti/etc/pki
+if [[ -f "$ZITI_HOME/etc/controller/bootstrap.env" ]]; then
+  echo "ℹ Controller already bootstrapped"
+  exit 0
+fi
 
-sudo mkdir -p $ZITI_CTRL_HOME
-sudo chown -R $USER:$USER /opt/openziti
+ziti controller edge init "$ZITI_HOME/etc/controller" \
+  --ctrl-advertised-address "$CTRL_DOMAIN" \
+  --ctrl-advertised-port "$ZITI_CTRL_API_PORT" \
+  --edge-advertised-address "$CTRL_DOMAIN" \
+  --edge-advertised-port "$ZITI_CTRL_EDGE_PORT"
 
-# Set required environment variables
-export ZITI_CTRL_ADVERTISED_ADDRESS="$(hostname -f)"
-export ZITI_CTRL_ADVERTISED_PORT=8440
+systemctl enable ziti-controller
+systemctl start ziti-controller
 
-# Bootstrap controller
-/opt/openziti/etc/controller/bootstrap.bash
-
-# Enable + start controller
-sudo systemctl enable ziti-controller
-sudo systemctl start ziti-controller
-
-echo "✅ Controller bootstrapped and running"
-echo "Admin creds saved in: $ZITI_CTRL_HOME"
+echo "✅ Controller bootstrapped"
