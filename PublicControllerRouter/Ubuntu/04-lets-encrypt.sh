@@ -4,7 +4,6 @@ trap 'echo "❌ Error on line $LINENO"; exit 1' ERR
 
 source /opt/openziti/load-env.sh
 
-# Ensure certbot is installed
 command -v certbot >/dev/null || { echo "❌ certbot not found"; exit 1; }
 
 for DOMAIN in "$CTRL_DOMAIN" "$ROUTER_DOMAIN"; do
