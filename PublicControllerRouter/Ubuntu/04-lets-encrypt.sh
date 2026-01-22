@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-source /opt/openziti/load-env.sh
-
 ###
 # CONFIG — CHANGE THESE
 ###
@@ -43,4 +41,42 @@ certbot certonly --standalone \
 ###
 # Permissions so Ziti can read certs
 ###
-echo "▶ Fixing certificate p
+echo "▶ Fixing certificate permissions..."
+chown -R ziti:ziti /etc/letsencrypt
+chmod -R 750 /etc/letsencrypt
+
+###
+# Install renewal hook
+###
+HOOK_DIR="/etc/letsencrypt/renewal-hooks/deploy"
+HOOK_FILE="$HOOK_DIR/ziti-reload.sh"
+
+mkdir -p "$HOOK_DIR"
+
+cat > "$HOOK_FILE" <<'EOF'
+#!/usr/bin/env bash
+systemctl restart ziti-controller
+systemctl restart ziti-router
+EOF
+
+chmod +x "$HOOK_FILE"
+
+###
+# Start Ziti again
+###
+echo "▶ Starting Ziti services..."
+systemctl start ziti-controller
+systemctl start ziti-router
+
+###
+# Dry-run renewal test
+###
+echo "▶ Testing renewal..."
+certbot renew --dry-run
+
+echo "✅ Let's Encrypt setup complete"
+echo "   Controller domain: $CTRL_DOMAIN"
+echo "   Router domain:     $ROUTER_DOMAIN"
+
+sudo chown root:root /opt/openziti/ziti.env
+sudo chmod 600 /opt/openziti/ziti.env

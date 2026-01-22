@@ -11,8 +11,6 @@ echo "✅ OpenZiti binaries installed"
 
 sudo mkdir -p /opt/openziti
 sudo cp ziti.env /opt/openziti/ziti.env
-sudo chown root:root /opt/openziti/ziti.env
-sudo chmod 600 /opt/openziti/ziti.env
 
 sudo cp load-env.sh /opt/openziti
 sudo chmod +x /opt/openziti/load-env.sh
