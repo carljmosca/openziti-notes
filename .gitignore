@@ -1,2 +1,23 @@
-ziti.env
+
+# --- Security ---
+# Never commit the actual credentials
 .env
+ziti.env
+
+# --- OpenZiti Data ---
+# These contain the private keys, CA, and the BoltDB database
+controller-data/
+router-data/
+
+# --- Caddy / Let's Encrypt ---
+# This contains your SSL certificates and ACME account keys
+caddy_data/
+
+# --- System / OS ---
+.DS_Store
+*.log
+*.tmp
+
+# --- Backups ---
+*.tar.gz
+*.zip

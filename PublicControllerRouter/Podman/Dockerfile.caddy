@@ -1,0 +1,9 @@
+# Use the full registry path to satisfy Podman's security policy
+FROM docker.io/library/caddy:builder AS builder
+
+RUN xcaddy build \
+    --with github.com/openziti-test-kitchen/ziti-caddy
+
+FROM docker.io/library/caddy:latest
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
