@@ -1,0 +1,13 @@
+# Dockerfile for Caddy with DNS Plugins
+# Usage: Use this to build a Caddy image capable of DNS-01 validation (no Port 80 needed).
+
+FROM docker.io/library/caddy:builder AS builder
+
+RUN xcaddy build \
+    --with github.com/caddy-dns/cloudflare
+    # Add other providers here if needed, e.g.:
+    # --with github.com/caddy-dns/route53
+
+FROM docker.io/library/caddy:2-alpine
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
