@@ -17,6 +17,13 @@ else
     exit 1
 fi
 
+# Versions
+ZITI_VERSION="1.6.12"
+CADDY_IMAGE="docker.io/carljmosca/ziti-caddy:latest"
+
+# 1. Clean up old runs
+echo "--- Cleaning up previous runs ---"
+
 echo "========================================================="
 echo " Deploying zitified OpenZiti (port 6262 only)"
 echo " Any firewalls must allow: TCP 6262 and 3022"
@@ -57,7 +64,7 @@ podman run --name ziti-controller -d --replace \
     -e ZITI_CTRL_EDGE_ADVERTISED_PORT="${ZITI_CTRL_ADVERTISED_PORT}" \
     -v $(pwd)/controller-data:/persistent:Z \
     -p "${ZITI_CTRL_ADVERTISED_PORT}:${ZITI_CTRL_ADVERTISED_PORT}" \
-    docker.io/openziti/ziti-controller:latest
+    docker.io/openziti/ziti-controller:${ZITI_VERSION}
 
 echo "Waiting for Controller..."
 until podman exec ziti-controller ziti edge login localhost:"${ZITI_CTRL_ADVERTISED_PORT}" -u admin -p "${ZITI_PWD}" -y > /dev/null 2>&1; do
@@ -107,7 +114,7 @@ podman run --name ziti-router-init --rm \
     -e ZITI_ROUTER_ADVERTISED_HOST="${ZITI_CTRL_ADVERTISED_ADDRESS}" \
     -e ZITI_ROUTER_CSR_SANS_DNS="${ZITI_CTRL_ADVERTISED_ADDRESS}" \
     -e ZITI_HOME="/persistent" \
-    docker.io/openziti/ziti-router:latest run &
+    docker.io/openziti/ziti-router:${ZITI_VERSION} run &
 
 PID=$!
 echo "Waiting 5 seconds for config generation..."
@@ -151,7 +158,7 @@ echo "--------------------------------------"
 
 # Find where the ziti binary is
 # We check common locations because 'which' might be missing in minimal images
-ZITI_BIN=$(podman run --rm --entrypoint /bin/sh docker.io/openziti/ziti-router:latest -c "ls /usr/local/bin/ziti /var/openziti/ziti-bin/ziti /openziti/ziti 2>/dev/null | head -n 1")
+ZITI_BIN=$(podman run --rm --entrypoint /bin/sh docker.io/openziti/ziti-router:${ZITI_VERSION} -c "ls /usr/local/bin/ziti /var/openziti/ziti-bin/ziti /openziti/ziti 2>/dev/null | head -n 1")
 
 if [ -z "$ZITI_BIN" ]; then
     echo "WARNING: Could not find 'ziti' binary in common locations. Defaulting to 'ziti' (PATH lookup)."
@@ -169,7 +176,7 @@ podman run --name ziti-router -d --replace --net ziti-stack_ziti-net \
     -e ZITI_HOME="/persistent" \
     -w /persistent \
     --entrypoint "${ZITI_BIN}" \
-    docker.io/openziti/ziti-router:latest router run /persistent/config.yml
+    docker.io/openziti/ziti-router:${ZITI_VERSION} router run /persistent/config.yml
 
 echo "Waiting 10 seconds for Router to initialize..."
 sleep 10
@@ -189,7 +196,7 @@ podman run --name caddy -d --replace --net ziti-stack_ziti-net \
     --add-host "${ZITI_CTRL_ADVERTISED_ADDRESS}:$NETWORK_GATEWAY" \
     -v $(pwd)/Caddyfile:/etc/caddy/Caddyfile:Z \
     -v $(pwd)/caddy-identity.json:/etc/caddy/caddy-identity.json:Z \
-    docker.io/carljmosca/ziti-caddy:latest caddy run --config /etc/caddy/Caddyfile
+    ${CADDY_IMAGE} caddy run --config /etc/caddy/Caddyfile
 
 echo "--- Verifying Caddy Connectivity ---"
 podman exec caddy cat /etc/hosts | grep "${ZITI_CTRL_ADVERTISED_ADDRESS}"
