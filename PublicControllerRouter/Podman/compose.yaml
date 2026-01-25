@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   ziti-controller:
-    image: docker.io/openziti/ziti-controller:latest
+    image: docker.io/openziti/ziti-controller:1.6.12
     container_name: ziti-controller
     user: "0:0"
     env_file: .env
@@ -15,21 +15,21 @@ services:
       - ziti-net
 
   ziti-router:
-    image: docker.io/openziti/ziti-router:latest
+    image: docker.io/openziti/ziti-router:1.6.12
     container_name: ziti-router
     env_file: .env
     environment:
       - ZITI_BOOTSTRAP=true
       - ZITI_ROUTER_NAME=ziti-router
     ports:
-      - "10080:10080"
+      - "3022:10080"
     volumes:
       - ./router-data:/persistent:Z
     networks:
       - ziti-net
 
   caddy:
-    image: docker.io/carljmosca/ziti-caddy:latest
+    image: docker.io/carljmosca/ziti-caddy:1.0.0
     container_name: caddy
     restart: unless-stopped
     # ... keep your volumes and networks as they were

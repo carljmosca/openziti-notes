@@ -19,7 +19,7 @@ fi
 
 # Versions
 ZITI_VERSION="1.6.12"
-CADDY_IMAGE="docker.io/carljmosca/ziti-caddy:latest"
+CADDY_IMAGE="docker.io/carljmosca/ziti-caddy:1.0.0"
 
 # 1. Clean up old runs
 echo "--- Cleaning up previous runs ---"

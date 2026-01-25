@@ -1,6 +1,6 @@
 #!/bin/bash
 REPO="docker.io/carljmosca/ziti-caddy"
-TAG="latest"
+TAG="1.0.0"
 
 # 1. Clean slate
 podman manifest rm $REPO:$TAG 2>/dev/null || true

@@ -4,6 +4,6 @@ FROM docker.io/library/caddy:builder AS builder
 RUN xcaddy build \
     --with github.com/openziti-test-kitchen/ziti-caddy
 
-FROM docker.io/library/caddy:latest
+FROM docker.io/library/caddy:1.0.0
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
